@@ -91,6 +91,7 @@ public class InterpreterValidTests extends TestHarness {
  @Test public void RecordDefine_Valid_1() { runInterpreterTest("RecordDefine_Valid_1"); } 
  @Test public void Remainder_Valid_1() { runInterpreterTest("Remainder_Valid_1"); } 
  @Test public void SingleLineComment_Valid_1() { runInterpreterTest("SingleLineComment_Valid_1"); } 
+ @Test public void SingleLineComment_Valid_2() { runInterpreterTest("SingleLineComment_Valid_2"); } 
  @Test public void String_Valid_1() { runInterpreterTest("String_Valid_1"); }
  @Test public void String_Valid_2() { runInterpreterTest("String_Valid_2"); }
  @Test public void String_Valid_3() { runInterpreterTest("String_Valid_3"); }

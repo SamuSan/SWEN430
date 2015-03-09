@@ -19,7 +19,9 @@
 package whilelang;
 
 import java.util.*;
+
 import whilelang.lang.*;
+import whilelang.lang.Expr.Constant;
 import whilelang.util.Pair;
 import static whilelang.util.SyntaxError.*;
 
@@ -34,13 +36,18 @@ import static whilelang.util.SyntaxError.*;
  */
 public class Interpreter {
 	private HashMap<String, WhileFile.Decl> declarations;
+	private HashMap<String, Expr.Constant> constants;
 	private WhileFile file;
 	
 	public void run(WhileFile wf) {
 		// First, initialise the map of declaration names to their bodies.
-		declarations = new HashMap<String,WhileFile.Decl>();
+		declarations 	= new HashMap<String,WhileFile.Decl>();
+		constants 		= new HashMap<String, Expr.Constant>();
 		for(WhileFile.Decl decl : wf.declarations) {
 			declarations.put(decl.name(), decl);
+			if(decl instanceof WhileFile.ConstDecl){
+				constants.put(decl.name(), (Constant) ((WhileFile.ConstDecl) decl).constant);
+			}
 		}
 		this.file = wf;
 		
@@ -228,6 +235,9 @@ public class Interpreter {
 	 * @return
 	 */
 	private Object execute(Expr expr, HashMap<String,Object> frame) {
+		if(exprVariableIsConstant(expr)){
+			expr = constants.get(expr.toString());
+		}
 		if(expr instanceof Expr.Binary) {
 			return execute((Expr.Binary) expr,frame);
 		} else if(expr instanceof Expr.Cast) {
@@ -252,6 +262,10 @@ public class Interpreter {
 			internalFailure("unknown expression encountered (" + expr + ")", file.filename,expr);
 			return null;
 		} 
+	}
+	
+	private boolean exprVariableIsConstant(Expr expr){
+		return constants.containsKey(expr.toString());
 	}
 	
 	private Object execute(Expr.Binary expr, HashMap<String,Object> frame) {
