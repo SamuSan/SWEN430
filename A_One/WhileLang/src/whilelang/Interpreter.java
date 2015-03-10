@@ -66,13 +66,13 @@ public class Interpreter {
 	private void processConstantDeclaration(String name, Expr expr) {
 		Attribute [] atts = {};
 		if (expr instanceof Expr.Constant) {
-			processConstantDeclaration(name, (Expr.Constant) expr, atts);
+			expr = (Expr.Constant) expr;
 		} 
-		else {
-			processConstantDeclaration(name, expr, atts);
-		}
+		
+		processConstantDeclaration(name, expr, atts);
 	}
 
+	@SuppressWarnings("unused")
 	private void processConstantDeclaration(String name, Expr.Constant constant, Attribute [] atts) {
 		constants.put(name, new Expr.Constant(constant.getValue(), atts));
 	}
