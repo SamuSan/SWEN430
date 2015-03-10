@@ -67,8 +67,9 @@ public class Interpreter {
 		Attribute [] atts = {};
 		if (expr instanceof Expr.Constant) {
 			processConstantDeclaration(name, (Expr.Constant) expr, atts);
-		} else {
-			processConstantDeclaration(name, (Expr.Binary) expr, atts);
+		} 
+		else {
+			processConstantDeclaration(name, expr, atts);
 		}
 	}
 
@@ -76,8 +77,8 @@ public class Interpreter {
 		constants.put(name, new Expr.Constant(constant.getValue(), atts));
 	}
 
-	private void processConstantDeclaration(String name, Expr.Binary bin, Attribute [] atts) {
-		constants.put(name, new Expr.Constant(execute(bin, null), atts));
+	private void processConstantDeclaration(String name, Expr expr, Attribute [] atts) {
+		constants.put(name, new Expr.Constant(execute(expr, null), atts));
 	}
 	/**
 	 * Execute a given function with the given argument values. If the number of
