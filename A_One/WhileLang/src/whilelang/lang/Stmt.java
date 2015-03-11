@@ -177,6 +177,34 @@ public interface Stmt extends SyntacticElement {
 		}
 	}
 
+	public static final class Break extends SyntacticElement.Impl implements
+			Stmt {
+
+		/**
+		 * Create a given return statement with an optional return value.
+		 * 
+		 * @param expr
+		 *            the return value, which may be <code>null</code>.
+		 * @param attributes
+		 */
+		public Break(Attribute... attributes) {
+			super(attributes);
+		}
+
+		/**
+		 * Create a given break statement.
+		 * 
+		 * @param attributes
+		 */
+		public Break(Collection<Attribute> attributes) {
+			super(attributes);
+		}
+
+		public String toString() {
+			return "break";
+		}
+	}
+
 	/**
 	 * Represents a while statement whose body is made up from a block of
 	 * statements separated by curly braces. Note that, unlike C or Java, the
@@ -313,8 +341,8 @@ public interface Stmt extends SyntacticElement {
 		 *            A list of zero or more statements, which may not be null.
 		 * @param attributes
 		 */
-		public For(VariableDeclaration declaration, Expr condition, Stmt increment,
-				Collection<Stmt> body, Attribute... attributes) {
+		public For(VariableDeclaration declaration, Expr condition,
+				Stmt increment, Collection<Stmt> body, Attribute... attributes) {
 			super(attributes);
 			this.declaration = declaration;
 			this.condition = condition;
@@ -337,8 +365,9 @@ public interface Stmt extends SyntacticElement {
 		 *            A list of zero or more statements, which may not be null.
 		 * @param attributes
 		 */
-		public For(VariableDeclaration declaration, Expr condition, Stmt increment,
-				Collection<Stmt> body, Collection<Attribute> attributes) {
+		public For(VariableDeclaration declaration, Expr condition,
+				Stmt increment, Collection<Stmt> body,
+				Collection<Attribute> attributes) {
 			super(attributes);
 			this.declaration = declaration;
 			this.condition = condition;
@@ -360,7 +389,7 @@ public interface Stmt extends SyntacticElement {
 		 * 
 		 * @return May be null.
 		 */
-		public Expr getCondition() {			
+		public Expr getCondition() {
 			return condition;
 		}
 
@@ -383,19 +412,30 @@ public interface Stmt extends SyntacticElement {
 		}
 	}
 
+	public static final class Switch extends SyntacticElement.Impl implements
+			Stmt {
+		private HashMap<Expr, ArrayList<Stmt>> cases;
+
+		public Switch(HashMap<Expr, ArrayList<Stmt>> cases) {
+			this.cases = cases;
+		}
+	}
+
 	/**
 	 * Represents a classical if-else statement, made up from a
-	 * <i>condition</i>, <i>true branch</i> and <i>false branch</i>.
-	 * The following illustrates:
+	 * <i>condition</i>, <i>true branch</i> and <i>false branch</i>. The
+	 * following illustrates:
+	 * 
 	 * <pre>
 	 * int max(int x, int y) {
-	 *   if(x > y) {
-	 *     return x;
-	 *   } else {
-	 *     return y;
-	 *   }
+	 * 	if (x &gt; y) {
+	 * 		return x;
+	 * 	} else {
+	 * 		return y;
+	 * 	}
 	 * }
 	 * </pre>
+	 * 
 	 * @author David J. Pearce
 	 * 
 	 */
@@ -555,8 +595,8 @@ public interface Stmt extends SyntacticElement {
 	 * @author David J. Pearce
 	 * 
 	 */
-	public static final class VariableDeclaration extends SyntacticElement.Impl implements
-			Stmt {
+	public static final class VariableDeclaration extends SyntacticElement.Impl
+			implements Stmt {
 		private final Type type;
 		private final String name;
 		private final Expr expr;
@@ -610,7 +650,7 @@ public interface Stmt extends SyntacticElement {
 		}
 
 		/**
-		 * Get the type of the variable being declared.  
+		 * Get the type of the variable being declared.
 		 * 
 		 * @return Guaranteed to be non-null.
 		 */
@@ -619,7 +659,7 @@ public interface Stmt extends SyntacticElement {
 		}
 
 		/**
-		 * Get the name of the variable being declared.  
+		 * Get the name of the variable being declared.
 		 * 
 		 * @return Guaranteed to be non-null.
 		 */

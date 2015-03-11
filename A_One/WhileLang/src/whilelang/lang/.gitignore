@@ -52,3 +52,5 @@
 /WhileFile$Parameter.class
 /WhileFile$TypeDecl.class
 /WhileFile.class
+/Stmt$Switch.class
+/Stmt$Break.class
