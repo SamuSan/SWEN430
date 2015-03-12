@@ -420,7 +420,36 @@ public interface Stmt extends SyntacticElement {
 			this.cases = cases;
 		}
 	}
-
+	/**
+	 * Represents  compelte case within a switch statement
+	 *  
+	 *  @param conditionExpression binary equal operation 
+	 *  @param expressions 
+	 *  		List of expressions, may be empty
+	 *  @param	statements
+	 *  	List of statements, may be emtpy
+	 * */
+	public static final class Case extends SyntacticElement.Impl implements
+	Stmt {
+		private final Expr.BOp conditonExpression;
+		private final ArrayList<Expr> expressions;
+		private final ArrayList<Stmt> statements;
+		
+		public Case(Expr.BOp conditionExpression, ArrayList<Stmt> statements, ArrayList<Expr> expressions) {
+			this.conditonExpression = conditionExpression;
+			this.statements = statements;
+			this.expressions = expressions;
+		}
+		
+		public ArrayList<Stmt> getStatements(){
+			return new ArrayList<Stmt>(statements); 
+		}
+		
+		public ArrayList<Expr> getExpressions(){
+			return new ArrayList<Expr>(expressions);
+		}
+		 
+	}
 	/**
 	 * Represents a classical if-else statement, made up from a
 	 * <i>condition</i>, <i>true branch</i> and <i>false branch</i>. The

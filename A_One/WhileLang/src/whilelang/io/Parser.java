@@ -21,8 +21,12 @@ package whilelang.io;
 import java.io.File;
 import java.util.*;
 
+import com.sun.org.apache.bcel.internal.classfile.ConstantInteger;
+import com.sun.xml.internal.bind.v2.runtime.reflect.opt.Const;
+
 import whilelang.io.Lexer.*;
 import whilelang.lang.Expr;
+import whilelang.lang.Expr.Constant;
 import whilelang.lang.Stmt;
 import whilelang.lang.Type;
 import whilelang.lang.WhileFile;
@@ -368,28 +372,30 @@ public class Parser {
 	private HashMap<Expr, ArrayList<Stmt>> parseCases(Expr switchConstant) {
 		checkNotEof();
 		match("{");
-
-		HashMap<Expr, ArrayList<Stmt>> caseStatements = new HashMap<Expr, ArrayList<Stmt>>();
+		
+		HashMap<Expr, ArrayList <ArrayList<Stmt>>> caseBlocks = new HashMap<Expr, ArrayList <ArrayList<Stmt>>>();
 
 		while (!(tokens.get(index) instanceof RightBrace)) {
+			Expr caseExpression = null;
+
+			
 			Token t = tokens.get(index);
 
 			if (t.text.equals("case")) {
 				match("case");
-				Expr caseE = parseCase(switchConstant);
+				caseExpression = parseCase(switchConstant);
 			} else {
 				// parse the default case
 			}
-			
-			Stmt statement = null;
+			System.out.println(caseExpression);
 			if (tokens.get(index) instanceof Keyword) {
-				statement = parseStatement(true);
+				Stmt statement = parseStatement(true);
 			}
 			index = index + 1;
 		}
 		match("}");
 
-		return caseStatements;
+		return null;
 	}
 
 	private Expr parseCase(Expr switchConstant) {
