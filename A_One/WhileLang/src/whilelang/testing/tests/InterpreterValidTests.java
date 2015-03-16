@@ -108,13 +108,13 @@ public class InterpreterValidTests extends TestHarness {
  @Test public void TypeEquals_Valid_1_RuntimeTest() { runInterpreterTest("TypeEquals_Valid_1"); }
  @Test public void TypeEquals_Valid_2_RuntimeTest() { runInterpreterTest("TypeEquals_Valid_2"); }
  @Test public void TypeEquals_Valid_5_RuntimeTest() { runInterpreterTest("TypeEquals_Valid_5"); }
- @Test public void TypeEquals_Valid_8_RuntimeTest() { runInterpreterTest("TypeEquals_Valid_8"); } 
- @Test public void TypeEquals_Valid_9_RuntimeTest() { runInterpreterTest("TypeEquals_Valid_9"); }
- @Test public void TypeEquals_Valid_11_RuntimeTest() { runInterpreterTest("TypeEquals_Valid_11"); }
- @Test public void TypeEquals_Valid_14_RuntimeTest() { runInterpreterTest("TypeEquals_Valid_14"); } 
- @Test public void TypeEquals_Valid_16_RuntimeTest() { runInterpreterTest("TypeEquals_Valid_16"); } 
- @Test public void TypeEquals_Valid_20_RuntimeTest() { runInterpreterTest("TypeEquals_Valid_20"); }
- 
+// @Test public void TypeEquals_Valid_8_RuntimeTest() { runInterpreterTest("TypeEquals_Valid_8"); } 
+// @Test public void TypeEquals_Valid_9_RuntimeTest() { runInterpreterTest("TypeEquals_Valid_9"); }
+// @Test public void TypeEquals_Valid_11_RuntimeTest() { runInterpreterTest("TypeEquals_Valid_11"); }
+// @Test public void TypeEquals_Valid_14_RuntimeTest() { runInterpreterTest("TypeEquals_Valid_14"); } 
+// @Test public void TypeEquals_Valid_16_RuntimeTest() { runInterpreterTest("TypeEquals_Valid_16"); } 
+// @Test public void TypeEquals_Valid_20_RuntimeTest() { runInterpreterTest("TypeEquals_Valid_20"); }
+// 
 // @Test public void UnionType_Valid_1() { runInterpreterTest("UnionType_Valid_1"); }
 // @Test public void UnionType_Valid_2() { runInterpreterTest("UnionType_Valid_2"); }
 // @Test public void UnionType_Valid_4() { runInterpreterTest("UnionType_Valid_4"); }

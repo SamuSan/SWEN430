@@ -356,6 +356,7 @@ public class Parser {
 		} else if (index < tokens.size() && tokens.get(index) instanceof Keyword) {
 			match("is");
 			Expr rhs = parseAppendExpression();
+			rhs = sanitizeTypeName(rhs);
 			return new Expr.Binary(Expr.BOp.IS, c1, rhs,
 					sourceAttr(start, index - 1));
 		} 
@@ -821,5 +822,16 @@ public class Parser {
 
 	private void syntaxError(String msg, Token t) {
 		throw new SyntaxError(msg, filename, t.start, t.start + t.text.length() - 1);
+	}
+	
+	private Expr sanitizeTypeName(Expr rhs){
+		if(rhs instanceof Expr.Variable){
+			return rhs;
+		}
+		else if(rhs instanceof Expr.ListConstructor){
+			return new Expr.Variable("listConstructor", sourceAttr(0,0));
+
+		}
+		return rhs;
 	}
 }

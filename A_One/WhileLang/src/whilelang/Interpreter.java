@@ -340,7 +340,7 @@ public class Interpreter {
 		case EQ:
 			return lhs.equals(rhs);
 		case IS:
-			return checkTypes(rhs.toString(), lhs);
+			return checkTypes(expr.getRhs().toString(), lhs);
 		case NEQ:
 			return !lhs.equals(rhs);
 		case LT:
@@ -558,6 +558,8 @@ public class Interpreter {
 			return objectToTest instanceof Boolean;
 		case "real":
 			return objectToTest instanceof Float;
+		case "listConstructor":
+			return objectToTest instanceof List;
 		default:
 			return false;
 		}
