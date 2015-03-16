@@ -185,6 +185,11 @@ public interface Expr extends SyntacticElement {
 				return "==";
 			}
 		},
+		IS {
+			public String toString(){
+				return "is";
+			}
+		},
 		NEQ {
 
 			public String toString() {

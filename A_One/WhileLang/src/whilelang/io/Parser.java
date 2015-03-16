@@ -55,6 +55,8 @@ public class Parser {
 					decls.add(parseTypeDeclaration());
 				} else if (t.text.equals("const")) {
 					decls.add(parseConstantDeclaration());
+				} else if (t.text.equals("is")) {
+					System.out.println();
 				} else {
 					decls.add(parseFunction());
 				}
@@ -351,7 +353,12 @@ public class Parser {
 			match("||");
 			Expr c2 = parseCondition();
 			return new Expr.Binary(Expr.BOp.OR, c1, c2, sourceAttr(start, index - 1));
-		}
+		} else if (index < tokens.size() && tokens.get(index) instanceof Keyword) {
+			match("is");
+			Expr rhs = parseAppendExpression();
+			return new Expr.Binary(Expr.BOp.IS, c1, rhs,
+					sourceAttr(start, index - 1));
+		} 
 		return c1;
 	}
 
@@ -543,7 +550,10 @@ public class Parser {
 			match("!");
 			return new Expr.Unary(Expr.UOp.NOT, parseTerm(), sourceAttr(start,
 					index - 1));
-		} 
+		} else if(token instanceof Keyword){
+			Type t = parseType();
+			return new Expr.Variable(t.toString(), sourceAttr(start, index-1));
+		}
 		syntaxError("unrecognised term (\"" + token.text + "\")", token);
 		return null;
 	}

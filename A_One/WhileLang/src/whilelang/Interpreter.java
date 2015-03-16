@@ -170,7 +170,8 @@ public class Interpreter {
 			src.put(ra.getName(), deepClone(rhs));
 		} else if (lhs instanceof Expr.IndexOf) {
 			Expr.IndexOf io = (Expr.IndexOf) lhs;
-			ArrayList<Object> src = (ArrayList) execute(io.getSource(), frame);
+			Expr expr = io.getSource();
+			ArrayList<Object> src = (ArrayList) execute(expr, frame);
 			Integer idx = (Integer) execute(io.getIndex(), frame);
 			Object rhs = execute(stmt.getRhs(), frame);
 			// We need to perform a deep clone here to ensure the value
@@ -338,6 +339,8 @@ public class Interpreter {
 			}
 		case EQ:
 			return lhs.equals(rhs);
+		case IS:
+			return checkTypes(rhs.toString(), lhs);
 		case NEQ:
 			return !lhs.equals(rhs);
 		case LT:
@@ -544,6 +547,19 @@ public class Interpreter {
 			return o.toString();
 		} else {
 			return "null";
+		}
+	}
+	
+	private boolean checkTypes(String type, Object objectToTest){
+		switch(type){
+		case "int":
+			return objectToTest instanceof Integer;
+		case "boolean":
+			return objectToTest instanceof Boolean;
+		case "real":
+			return objectToTest instanceof Float;
+		default:
+			return false;
 		}
 	}
 }
