@@ -353,12 +353,6 @@ public class Parser {
 			match("||");
 			Expr c2 = parseCondition();
 			return new Expr.Binary(Expr.BOp.OR, c1, c2, sourceAttr(start, index - 1));
-		} else if (index < tokens.size() && tokens.get(index) instanceof Keyword) {
-			match("is");
-			Expr rhs = parseAppendExpression();
-			rhs = sanitizeTypeName(rhs);
-			return new Expr.Binary(Expr.BOp.IS, c1, rhs,
-					sourceAttr(start, index - 1));
 		} 
 		return c1;
 	}
@@ -397,7 +391,15 @@ public class Parser {
 			Expr rhs = parseAppendExpression();
 			return new Expr.Binary(Expr.BOp.NEQ, lhs, rhs,
 					sourceAttr(start, index - 1));
-		} else {
+		} else if (index < tokens.size() && tokens.get(index).text.equals("is")) {
+			match("is");
+			Expr rhs = parseAppendExpression();
+			rhs = sanitizeTypeName(rhs);
+			return new Expr.Binary(Expr.BOp.IS, lhs, rhs,
+					sourceAttr(start, index - 1));
+		}  
+		
+		else {
 			return lhs;
 		}
 	}
