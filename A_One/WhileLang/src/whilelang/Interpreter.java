@@ -28,6 +28,7 @@ import com.sun.org.apache.xml.internal.security.utils.JavaUtils;
 import whilelang.lang.*;
 import whilelang.lang.Expr.Constant;
 import whilelang.lang.Type.Int;
+import whilelang.lang.Type.Record;
 import whilelang.util.Attribute;
 import whilelang.util.Pair;
 import static whilelang.util.SyntaxError.*;
@@ -397,10 +398,60 @@ public class Interpreter {
 
     private Object execute(Expr.Cast expr, HashMap<String, Object> frame) {
         Object rhs = execute(expr.getSource(), frame);
+        if (rhs instanceof Integer && expr.getType() instanceof Type.Real) {
+            int rhsInt = (Integer) rhs;
+            return 1.0 * rhsInt;
+        } else if (rhs instanceof ArrayList) {
+            return performListCast(rhs, expr);
+        } else if(rhs instanceof HashMap){
+            return performHashMapCast(rhs, expr);
+        }
+        
         // TODO: we need to actually implement casting here!
         return rhs;
     }
 
+    private <E> ArrayList<E> performListCast(Object rhs, Expr.Cast expr){
+        ArrayList rhsList = (ArrayList) rhs;
+        if (rhsList.get(0) instanceof Integer) {
+            ArrayList<Integer> rhsListInts = (ArrayList) rhsList;
+            if (expr.getType().toString().equals("[real]")) {
+                ArrayList<Double> dubs = new ArrayList<Double>();
+                for (Integer i : rhsListInts) {
+                    dubs.add(1.0 * i);
+                }
+                return (ArrayList<E>) dubs;
+            }
+        }
+        return null;
+    }
+    
+    private <E, T> HashMap<E,T> performHashMapCast(Object rhs, Expr.Cast expr){
+        HashMap rhsMap = (HashMap) rhs;
+        Type t = null;
+        boolean isInt = false;
+        for (Object o : rhsMap.values()) {
+            if(o instanceof Integer){
+                isInt = true;
+            }
+        }
+        
+        if(expr.getType() instanceof Type.Record){
+            Type.Record caster  = (Record) expr.getType();
+            for (String s : caster.getFields().keySet()) {
+                t = caster.getFields().get(s);
+            }
+        }
+
+        if(isInt && t instanceof Type.Real){
+            HashMap<Object, Double> result = new HashMap<Object, Double>(); 
+            for (Object i : rhsMap.keySet()) {
+                result.put(i, ((Integer)rhsMap.get(i)) * 1.0);
+            }
+            return (HashMap<E, T>) result;
+        }
+        return null;
+    }
     private Object execute(Expr.Constant expr, HashMap<String, Object> frame) {
         return expr.getValue();
     }
@@ -585,12 +636,12 @@ public class Interpreter {
     private boolean testWhileTypeAgainstJavaType(Type t, Object o) {
         if (t instanceof Type.Int && o instanceof Integer) {
             return true;
-        } else if(t instanceof Type.Real && o instanceof Double){
+        } else if (t instanceof Type.Real && o instanceof Double) {
             return true;
-        } else if(t instanceof Type.Record && o instanceof HashMap){
+        } else if (t instanceof Type.Record && o instanceof HashMap) {
             return true;
         }
 
-            return false;
+        return false;
     }
 }
