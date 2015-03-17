@@ -587,6 +587,8 @@ public class Interpreter {
             return true;
         } else if(t instanceof Type.Real && o instanceof Double){
             return true;
+        } else if(t instanceof Type.Record && o instanceof HashMap){
+            return true;
         }
 
             return false;
