@@ -383,6 +383,22 @@ public interface Stmt extends SyntacticElement {
 		}
 	}
 
+	public static final class Switch extends SyntacticElement.Impl implements
+	    Stmt{
+	    private HashMap<Expr, ArrayList<Stmt>> cases;
+
+        public Switch(HashMap<Expr, ArrayList<Stmt>> cases){
+	        this.cases = cases;
+	    }
+        
+        public Set<Expr> getKeys(){
+            return cases.keySet();
+        }
+        
+        public ArrayList<Stmt> getStatementsForCase(Expr expr){
+            return cases.get(expr);
+        }
+	}
 	/**
 	 * Represents a classical if-else statement, made up from a
 	 * <i>condition</i>, <i>true branch</i> and <i>false branch</i>.

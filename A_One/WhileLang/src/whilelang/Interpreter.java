@@ -144,6 +144,8 @@ public class Interpreter {
             return execute((Stmt.Assign) stmt, frame);
         } else if (stmt instanceof Stmt.For) {
             return execute((Stmt.For) stmt, frame);
+        }else if(stmt instanceof Stmt.Switch){
+            return execute((Stmt.Switch) stmt, frame);
         } else if (stmt instanceof Stmt.While) {
             return execute((Stmt.While) stmt, frame);
         } else if (stmt instanceof Stmt.IfElse) {
@@ -207,6 +209,14 @@ public class Interpreter {
         return null;
     }
 
+    private Object execute(Stmt.Switch stmt, HashMap<String, Object> frame) {
+        for (Expr expr : stmt.getKeys()) {
+            Object caseConditionResult = execute(expr, frame);
+            System.out.println();
+        }
+        return null;
+    }
+    
     private Object execute(Stmt.While stmt, HashMap<String, Object> frame) {
         while ((Boolean) execute(stmt.getCondition(), frame)) {
             Object ret = execute(stmt.getBody(), frame);
