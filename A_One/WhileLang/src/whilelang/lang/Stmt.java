@@ -385,9 +385,9 @@ public interface Stmt extends SyntacticElement {
 
 	public static final class Switch extends SyntacticElement.Impl implements
 	    Stmt{
-	    private HashMap<Expr, ArrayList<Stmt>> cases;
+	    private LinkedHashMap<Expr, ArrayList<Stmt>> cases;
 
-        public Switch(HashMap<Expr, ArrayList<Stmt>> cases){
+        public Switch(LinkedHashMap<Expr, ArrayList<Stmt>> cases){
 	        this.cases = cases;
 	    }
         

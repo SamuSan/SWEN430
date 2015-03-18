@@ -354,7 +354,7 @@ public class Parser {
     }
 
     private Stmt parseSwitch() {
-        HashMap<Expr, ArrayList<Stmt>> cases = new HashMap<Expr, ArrayList<Stmt>>();
+        LinkedHashMap<Expr, ArrayList<Stmt>> cases = new LinkedHashMap<Expr, ArrayList<Stmt>>();
         match("switch");
         match("(");
 
@@ -396,7 +396,26 @@ public class Parser {
 
     private Object parseCaseValue(){
         checkNotEof();
+        int i;
+        double d;
+        
         Object o = tokens.get(index);
+        if(o instanceof Lexer.Int){
+           Lexer.Int li = (Lexer.Int) o;
+           i = (Integer) li.value; 
+           index = index + 1;
+           return i;
+        } else if(o instanceof Lexer.Real){
+            Lexer.Real lr = (Lexer.Real) o;
+            d = (Double) lr.value; 
+            index = index + 1;
+            return d; 
+          //List buzz buzz  
+        } else if (o instanceof LeftSquare){
+            Expr list = parseListVal();
+            return list;
+        }
+        
         index = index + 1;
         return o;
     }

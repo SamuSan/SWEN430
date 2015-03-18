@@ -212,7 +212,16 @@ public class Interpreter {
     private Object execute(Stmt.Switch stmt, HashMap<String, Object> frame) {
         for (Expr expr : stmt.getKeys()) {
             Object caseConditionResult = execute(expr, frame);
-            System.out.println();
+            if (caseConditionResult != null) {
+                boolean rt = (boolean) caseConditionResult;
+                if(rt){
+                    Object statementExecutionResult = null;
+                    for (Stmt s : stmt.getStatementsForCase(expr)) {
+                        statementExecutionResult = execute(s, frame);
+                    }
+                    return statementExecutionResult;
+                }
+            }
         }
         return null;
     }
@@ -358,6 +367,18 @@ public class Interpreter {
                 return ((Double) lhs) % ((Double) rhs);
             }
         case EQ:
+            if(isNumber(lhs)){
+                if(lhs instanceof Integer){
+                    return ((Integer) lhs).equals((Integer) rhs);
+                } else{
+                    return ((Double) lhs).equals((Double) rhs);
+                }
+                
+            } else if(lhs instanceof List){
+                List rhl = convertList(rhs);
+//                System.out.println(lhs.equals(rhl));
+                return lhs.equals(rhl);
+            }
             return lhs.equals(rhs);
         case IS:
             return checkTypes(expr.getRhs().toString(), lhs);
@@ -653,5 +674,19 @@ public class Interpreter {
         }
 
         return false;
+    }
+    
+    private boolean isNumber(Object o){
+        return o instanceof Integer || o instanceof Double;
+    }
+    
+    private <T> ArrayList<T> convertList(Object rhs){
+        Expr.ListConstructor listToConvert  = (Expr.ListConstructor) rhs;
+        ArrayList newList = new ArrayList();
+        
+        for (Object o : listToConvert.getArguments()) {
+            newList.add(o);
+        }
+        return newList;
     }
 }
