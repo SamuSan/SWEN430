@@ -152,6 +152,8 @@ public class Interpreter {
             return execute((Stmt.IfElse) stmt, frame);
         } else if (stmt instanceof Stmt.Return) {
             return execute((Stmt.Return) stmt, frame);
+        } else if (stmt instanceof Stmt.Break) {
+            return execute((Stmt.Break) stmt, frame);
         } else if (stmt instanceof Stmt.VariableDeclaration) {
             return execute((Stmt.VariableDeclaration) stmt, frame);
         } else if (stmt instanceof Stmt.Print) {
@@ -255,6 +257,10 @@ public class Interpreter {
         }
     }
 
+    private Object execute(Stmt.Break stmt, HashMap<String, Object> frame) {
+        return null; //We don't actually want to do shit, just move on, nothing to see here.
+    }
+    
     private Object execute(Stmt.VariableDeclaration stmt,
             HashMap<String, Object> frame) {
         Expr re = stmt.getExpr();
@@ -685,7 +691,13 @@ public class Interpreter {
         ArrayList newList = new ArrayList();
         
         for (Object o : listToConvert.getArguments()) {
-            newList.add(o);
+            if(o instanceof Expr.Constant){
+                Expr.Constant exprConst = (Expr.Constant) o;
+                newList.add(exprConst.getValue());
+            } else{
+                newList.add(o);  
+            }
+
         }
         return newList;
     }

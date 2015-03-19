@@ -26,6 +26,7 @@ import whilelang.lang.Expr;
 import whilelang.lang.Expr.BOp;
 import whilelang.lang.Expr.Constant;
 import whilelang.lang.Stmt;
+import whilelang.lang.Stmt.Break;
 import whilelang.lang.Type;
 import whilelang.lang.WhileFile;
 import whilelang.lang.WhileFile.*;
@@ -144,8 +145,9 @@ public class Parser {
 
         ArrayList<Stmt> stmts = new ArrayList<Stmt>();
         while (index < tokens.size()
-                && !(tokens.get(index).text.equals("case")) 
-                    && !(tokens.get(index) instanceof RightCurly) ) {
+                && !(tokens.get(index).text.equals("case"))
+                        && !(tokens.get(index).text.equals("default"))
+                                && !(tokens.get(index) instanceof RightCurly)) {
             stmts.add(parseStatement(true));
         }
 
@@ -167,6 +169,11 @@ public class Parser {
         Stmt stmt;
         if (token.text.equals("return")) {
             stmt = parseReturn();
+            if (withSemiColon) {
+                match(";");
+            }
+        } else if (token.text.equals("break")) {
+            stmt = parseBreak();
             if (withSemiColon) {
                 match(";");
             }
@@ -289,6 +296,13 @@ public class Parser {
         return new Stmt.Return(e, sourceAttr(start, index - 1));
     }
 
+    private Stmt.Break parseBreak() {
+        int start = index;
+        // Every break statement begins with the break keyword!
+        matchKeyword("break");
+        return new Stmt.Break(sourceAttr(start, index - 1));
+    }
+    
     private Stmt.Print parsePrint() {
         int start = index;
         matchKeyword("print");
@@ -384,14 +398,23 @@ public class Parser {
 
     private Expr.Binary parseCaseCondition(Expr.Variable switchVariable) {
         int start = index;
-        match("case");
+        if(tokens.get(index).text.equals("case")){
+            match("case");
 
-        Object o = parseCaseValue();
-        Expr.Constant value = new Expr.Constant(o);
+            Object o = parseCaseValue();
+            Expr.Constant value = new Expr.Constant(o);
 
-        match(":");
-        return new Expr.Binary(BOp.EQ, switchVariable, value, sourceAttr(start,
-                index - 1));
+            match(":");
+            return new Expr.Binary(BOp.EQ, switchVariable, value, sourceAttr(start,
+                    index - 1));
+        } else{
+            match("default");
+            match(":");
+
+            return new Expr.Binary(BOp.EQ, switchVariable, switchVariable, sourceAttr(start,
+                    index - 1));
+        }
+
     }
 
     private Object parseCaseValue(){

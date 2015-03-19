@@ -176,6 +176,31 @@ public interface Stmt extends SyntacticElement {
 			return expr;
 		}
 	}
+	
+   public static final class Break extends SyntacticElement.Impl implements
+           Stmt {
+       /**
+        * Create a given break statement 
+        * 
+        * @param expr
+        *            the return value, which may be <code>null</code>.
+        * @param attributes
+        */
+       public Break(Attribute... attributes) {
+           super(attributes);
+       }
+    
+       /**
+        * Create a given break statement 
+        * 
+        * @param expr
+        *            the return value, which may be <code>null</code>.
+        * @param attributes
+        */
+       public String toString() {
+           return "break";
+       }
+    }
 
 	/**
 	 * Represents a while statement whose body is made up from a block of
