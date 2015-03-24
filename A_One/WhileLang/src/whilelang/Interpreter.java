@@ -25,10 +25,14 @@ import javax.print.PrintService;
 import com.sun.org.apache.bcel.internal.classfile.JavaClass;
 import com.sun.org.apache.xml.internal.security.utils.JavaUtils;
 
+import whilelang.io.Lexer;
+import whilelang.io.Lexer.Char;
 import whilelang.lang.*;
 import whilelang.lang.Expr.Constant;
+import whilelang.lang.Expr.ListConstructor;
 import whilelang.lang.Type.Int;
 import whilelang.lang.Type.Record;
+import whilelang.lang.WhileFile.ConstDecl;
 import whilelang.util.Attribute;
 import whilelang.util.Pair;
 import static whilelang.util.SyntaxError.*;
@@ -144,7 +148,7 @@ public class Interpreter {
             return execute((Stmt.Assign) stmt, frame);
         } else if (stmt instanceof Stmt.For) {
             return execute((Stmt.For) stmt, frame);
-        }else if(stmt instanceof Stmt.Switch){
+        } else if (stmt instanceof Stmt.Switch) {
             return execute((Stmt.Switch) stmt, frame);
         } else if (stmt instanceof Stmt.While) {
             return execute((Stmt.While) stmt, frame);
@@ -185,12 +189,24 @@ public class Interpreter {
         } else if (lhs instanceof Expr.IndexOf) {
             Expr.IndexOf io = (Expr.IndexOf) lhs;
             Expr expr = io.getSource();
-            ArrayList<Object> src = (ArrayList) execute(expr, frame);
-            Integer idx = (Integer) execute(io.getIndex(), frame);
-            Object rhs = execute(stmt.getRhs(), frame);
-            // We need to perform a deep clone here to ensure the value
-            // semantics used in While are preserved.
-            src.set(idx, deepClone(rhs));
+            ArrayList<Object> src = new ArrayList<Object>();
+
+            Object _src = execute(expr, frame);
+            if (_src instanceof String) {
+                char[] outPut = ((String) _src).toCharArray();
+                Integer idx = (Integer) execute(io.getIndex(), frame);
+                Object rhs = execute(stmt.getRhs(), frame);
+                outPut[idx] = (char) rhs;
+                String result = String.valueOf(outPut);
+                frame.put(expr.toString(), result);
+            } else {
+                src = (ArrayList) execute(expr, frame);
+                Integer idx = (Integer) execute(io.getIndex(), frame);
+                Object rhs = execute(stmt.getRhs(), frame);
+                // We need to perform a deep clone here to ensure the value
+                // semantics used in While are preserved.
+                src.set(idx, deepClone(rhs));
+            }
         } else {
             internalFailure("unknown lval encountered (" + lhs + ")",
                     file.filename, stmt);
@@ -216,7 +232,7 @@ public class Interpreter {
             Object caseConditionResult = execute(expr, frame);
             if (caseConditionResult != null) {
                 boolean rt = (boolean) caseConditionResult;
-                if(rt){
+                if (rt) {
                     Object statementExecutionResult = null;
                     for (Stmt s : stmt.getStatementsForCase(expr)) {
                         statementExecutionResult = execute(s, frame);
@@ -227,7 +243,7 @@ public class Interpreter {
         }
         return null;
     }
-    
+
     private Object execute(Stmt.While stmt, HashMap<String, Object> frame) {
         while ((Boolean) execute(stmt.getCondition(), frame)) {
             Object ret = execute(stmt.getBody(), frame);
@@ -258,9 +274,10 @@ public class Interpreter {
     }
 
     private Object execute(Stmt.Break stmt, HashMap<String, Object> frame) {
-        return null; //We don't actually want to do shit, just move on, nothing to see here.
+        return null; // We don't actually want to do shit, just move on, nothing
+                     // to see here.
     }
-    
+
     private Object execute(Stmt.VariableDeclaration stmt,
             HashMap<String, Object> frame) {
         Expr re = stmt.getExpr();
@@ -373,17 +390,40 @@ public class Interpreter {
                 return ((Double) lhs) % ((Double) rhs);
             }
         case EQ:
-            if(isNumber(lhs)){
-                if(lhs instanceof Integer){
-                    return ((Integer) lhs).equals((Integer) rhs);
-                } else{
-                    return ((Double) lhs).equals((Double) rhs);
+            if (isNumber(lhs)) {
+                if (rhsTypeOfLexerNumber(rhs)) {
+                    if (lhs instanceof Integer) {
+                        return ((Integer) lhs).equals((Integer) rhs);
+                    } else {
+                        return ((Double) lhs).equals((Double) rhs);
+                    }
+                }//Prolly gonna be a const reference 
+                else if (rhs instanceof Lexer.Identifier){
+                    String constKey = ((Lexer.Identifier) rhs).text;
+                    if(this.declarations.containsKey(constKey)){
+                        Expr.Constant constantValue = (Expr.Constant) this.constants.get(constKey);
+                        
+                        if (lhs instanceof Integer) {
+                            return ((Integer) lhs) == ((Integer) constantValue.getValue());
+                        } else {
+                            return ((Double) lhs) == ((Double) constantValue.getValue());
+                        }
+                    }
                 }
-                
-            } else if(lhs instanceof List){
-                List rhl = convertList(rhs);
-//                System.out.println(lhs.equals(rhl));
-                return lhs.equals(rhl);
+
+            } else if (lhs instanceof List) {
+                if (rhs instanceof ListConstructor) {
+                    List rhl = convertList(rhs);
+                    return lhs.equals(rhl);
+                } else {
+                    return lhs.equals(rhs);
+                }
+            } else if (lhs instanceof Character) {
+                if(rhs instanceof Lexer.Char){
+                    char rhChar = convertLexerChar((Lexer.Char) rhs);
+                    return lhs.equals(rhChar);    
+                }
+
             }
             return lhs.equals(rhs);
         case IS:
@@ -422,7 +462,11 @@ public class Interpreter {
             } else if (rhs instanceof String) {
                 return toString(lhs) + ((String) rhs);
             } else if (lhs instanceof ArrayList && rhs instanceof ArrayList) {
-                ArrayList l = (ArrayList) lhs;
+                ArrayList l = new ArrayList();
+                for (Object object : (ArrayList) lhs) {
+                    l.add(object);
+                }
+//                ArrayList l = (ArrayList) lhs;
                 l.addAll((ArrayList) rhs);
                 return l;
             }
@@ -440,15 +484,15 @@ public class Interpreter {
             return 1.0 * rhsInt;
         } else if (rhs instanceof ArrayList) {
             return performListCast(rhs, expr);
-        } else if(rhs instanceof HashMap){
+        } else if (rhs instanceof HashMap) {
             return performHashMapCast(rhs, expr);
         }
-        
+
         // TODO: we need to actually implement casting here!
         return rhs;
     }
 
-    private <E> ArrayList<E> performListCast(Object rhs, Expr.Cast expr){
+    private <E> ArrayList<E> performListCast(Object rhs, Expr.Cast expr) {
         ArrayList rhsList = (ArrayList) rhs;
         if (rhsList.get(0) instanceof Integer) {
             ArrayList<Integer> rhsListInts = (ArrayList) rhsList;
@@ -458,37 +502,47 @@ public class Interpreter {
                     dubs.add(1.0 * i);
                 }
                 return (ArrayList<E>) dubs;
+            } else if (expr.getType().toString().equals("[int]")) {
+                ArrayList<Integer> ints = new ArrayList<Integer>();
+                for (Integer i : rhsListInts) {
+                    ints.add(i);
+                }
+                return (ArrayList<E>) ints;
             }
         }
         return null;
     }
-    
-    private <E, T> HashMap<E,T> performHashMapCast(Object rhs, Expr.Cast expr){
+
+    private <E, T> HashMap<E, T> performHashMapCast(Object rhs, Expr.Cast expr) {
         HashMap rhsMap = (HashMap) rhs;
-        Type t = null;
-        boolean isInt = false;
-        for (Object o : rhsMap.values()) {
-            if(o instanceof Integer){
-                isInt = true;
+        HashMap<String, Type> castsToMake = new HashMap<String, Type>();
+
+        if (expr.getType() instanceof Type.Record) {
+            Type.Record caster = (Record) expr.getType();
+            for (String s : caster.getFields().keySet()) {
+                castsToMake.put(s, caster.getFields().get(s));
             }
+            // Arrrgggh this is so groddy.
+            Object[] rhKeys = rhsMap.keySet().toArray();
+            if (isNumber(rhsMap.get(rhKeys[0]))) {
+                for (String s : castsToMake.keySet()) {
+                    if (castsToMake.get(s) instanceof Type.Int
+                            && rhsMap.get(s) instanceof Double) {
+                        rhsMap.put(s, (Integer) rhsMap.get(s));
+                    } else if (castsToMake.get(s) instanceof Type.Real
+                            && rhsMap.get(s) instanceof Integer) {
+                        rhsMap.put(s, (Integer) rhsMap.get(s) * 1.0);
+                    }
+                }
+                return rhsMap;
+            }
+        }else{
+            return rhsMap;
         }
         
-        if(expr.getType() instanceof Type.Record){
-            Type.Record caster  = (Record) expr.getType();
-            for (String s : caster.getFields().keySet()) {
-                t = caster.getFields().get(s);
-            }
-        }
-
-        if(isInt && t instanceof Type.Real){
-            HashMap<Object, Double> result = new HashMap<Object, Double>(); 
-            for (Object i : rhsMap.keySet()) {
-                result.put(i, ((Integer)rhsMap.get(i)) * 1.0);
-            }
-            return (HashMap<E, T>) result;
-        }
         return null;
     }
+
     private Object execute(Expr.Constant expr, HashMap<String, Object> frame) {
         return expr.getValue();
     }
@@ -659,6 +713,8 @@ public class Interpreter {
             return objectToTest instanceof String;
         } else if (type.equals("listConstructor")) {
             return objectToTest instanceof List;
+        } else if (type.equals("null")) {
+            return objectToTest == null;
         } else {
             // Gotta be user defined type
             if (declarations.keySet().contains(type)) {
@@ -681,24 +737,32 @@ public class Interpreter {
 
         return false;
     }
-    
-    private boolean isNumber(Object o){
+
+    private boolean isNumber(Object o) {
         return o instanceof Integer || o instanceof Double;
     }
-    
-    private <T> ArrayList<T> convertList(Object rhs){
-        Expr.ListConstructor listToConvert  = (Expr.ListConstructor) rhs;
+
+    private <T> ArrayList<T> convertList(Object rhs) {
+        Expr.ListConstructor listToConvert = (Expr.ListConstructor) rhs;
         ArrayList newList = new ArrayList();
-        
+
         for (Object o : listToConvert.getArguments()) {
-            if(o instanceof Expr.Constant){
+            if (o instanceof Expr.Constant) {
                 Expr.Constant exprConst = (Expr.Constant) o;
                 newList.add(exprConst.getValue());
-            } else{
-                newList.add(o);  
+            } else {
+                newList.add(o);
             }
 
         }
         return newList;
+    }
+
+    private char convertLexerChar(Lexer.Char charr) {
+        return Character.valueOf(charr.value);
+    }
+    
+    private boolean rhsTypeOfLexerNumber(Object rhs){
+        return rhs instanceof Lexer.Int || rhs instanceof Lexer.Real;
     }
 }
